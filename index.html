@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>ナイトレイン ランダムボスチェッカー</title>
+  <meta name="description" content="ELDEN RING NIGHTREIGN(ナイトレイン)の深き夜 ボス不明時に候補を絞り込むツール">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="keywords" content="ELDEN RING NIGHTREIGN,ナイトレイン,NIGHTREIGN,深き夜,Deep of Night,ランダムボス,ボス不明">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
+  <link rel="shortcut icon" href="favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="Nightreign Relic Image Combiner" />
+  <link rel="manifest" href="favicon/site.webmanifest" />
+  <link rel="canonical" href="https://17number.github.io/ern-random-boss-checker/">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ERN Random Boss Checker",
+      "url": "https://17number.github.io/ern-random-boss-checker/",
+      "applicationCategory": "Utility",
+      "operatingSystem": "Web",
+      "description": "ELDEN RING NIGHTREIGN(ナイトレイン)の深き夜 ボス不明時に候補を絞り込むツール"
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .radio-label{
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 1px solid #334155;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      display: inline-block;
+    }
+
+    .radio-label:hover{
+      background: linear-gradient(145deg, #334155, #1e293b);
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+      cursor: pointer;
+    }
+
+    .radio-input:checked + .radio-label{
+      background: linear-gradient(145deg, #10b981, #047857);
+      border-color: #34d399;
+      color: #ffffff;
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 0 0 2px rgba(16,185,129,0.35), 0 8px 16px rgba(0,0,0,0.6);
+      cursor: pointer;
+    }
+
+    .radio-input:checked + .radio-label:hover{
+      background: linear-gradient(145deg, #34d399, #059669);
+      cursor: pointer;
+    }
+
+    .radio-input:active + .radio-label{
+      transform: translateY(0) scale(0.98);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-4">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">ナイトレイン ランダムボスチェッカー</h1>
+    </div>
+
+    <div class="bg-slate-800/60 rounded-2xl mb-4 p-4 shadow-lg">
+      <button id="reset" class="px-4 py-2 bg-red-500 hover:bg-red-400 rounded-xl">リセット</button>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-3">
+      <!-- Day1 -->
+      <div class="bg-slate-800/60 rounded-2xl p-4 shadow-lg">
+        <h2 class="font-semibold mb-3">1日目ボス</h2>
+        <div id="day1" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- Day2 -->
+      <div class="bg-slate-800/60 rounded-2xl p-4 shadow-lg">
+        <h2 class="font-semibold mb-3">2日目ボス</h2>
+        <div id="day2-message" class="text-slate-400 text-sm">1日目ボスを選択してください</div>
+        <div id="day2" class="flex flex-wrap gap-2 mt-2 hidden"></div>
+      </div>
+
+      <!-- Final -->
+      <div class="bg-slate-800/60 rounded-2xl p-4 shadow-lg">
+        <h2 class="font-semibold mb-3">最終日ボス候補</h2>
+        <div id="final-message" class="text-slate-400 text-sm">ボスを選択してください</div>
+        <div id="final" class="flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+const dataDay1 = {
+  "亜人の女王＆亜人の剣聖": ["グラディウス"],
+  "鈴玉狩り": ["グラディウス"],
+  "貪食ドラゴン": ["エデレ","マリス","フルゴール"],
+  "夜の騎兵": ["エデレ","フルゴール"],
+  "英雄のガーゴイル": ["エデレ","マリス"],
+  "ミミズ顔": ["エデレ","マリス","フルゴール"],
+  "百足のデーモン": ["グノスター","リブラ","フルゴール"],
+  "熔鉄デーモン": ["グノスター","マリス","カリゴ"],
+  "戦場の宿将": ["グノスター","リブラ"],
+  "爛れた樹霊": ["グノスター","カリゴ"],
+  "接ぎ木の君主": ["マリス","カリゴ"],
+  "ティビアの呼び舟": ["リブラ","グノスター","カリゴ"],
+  "王族の幽鬼": ["リブラ","フルゴール"],
+  "公のフレイディア": ["エデレ","リブラ","カリゴ"],
+  "傷ついたデーモン＆うろ底のデーモン": ["ハルモニア"],
+  "呪剣士＆神獣の戦士": ["ハルモニア"],
+  "大赤熊": ["ストラゲス"],
+  "死の騎士": ["ストラゲス"],
+};
+
+const dataDay2 = {
+  "ツリーガード": ["グラディウス","マリス"],
+  "忌み鬼": ["グラディウス"],
+  "古竜": ["エデレ"],
+  "坩堝の騎士＆黄金カバ": ["リブラ"],
+  "僻地の宿将": ["エデレ","フルゴール"],
+  "ノクスの竜人兵": ["グノスター","フルゴール"],
+  "竜のツリーガード": ["グノスター","カリゴ"],
+  "大土竜": ["グノスター"],
+  "神肌の貴種＆神肌の使徒": ["マリス","リブラ","カリゴ"],
+  "降る星の成獣": ["マリス"],
+  "冷たい谷の踊り子": ["カリゴ"],
+  "無名の王": ["フルゴール"],
+  "死儀礼の鳥": ["リブラ"],
+  "デーモンの王子": ["ハルモニア"],
+  "血の君主": ["ハルモニア"],
+  "神獣獅子舞": ["ストラゲス"],
+  "騎士アルトリウス": ["ストラゲス"],
+};
+
+const dataNameless = [
+  "亜人の女王＆亜人の剣聖","鈴玉狩り","貪食ドラゴン","夜の騎兵","英雄のガーゴイル",
+  "ミミズ顔","百足のデーモン","熔鉄デーモン","戦場の宿将","爛れた樹霊",
+  "接ぎ木の君主","ティビアの呼び舟","王族の幽鬼","公のフレイディア",
+  "ツリーガード","忌み鬼","古竜","坩堝の騎士＆黄金カバ","僻地の宿将",
+  "ノクスの竜人兵","竜のツリーガード","大土竜","神肌の貴種＆神肌の使徒",
+  "降る星の成獣","冷たい谷の踊り子","無名の王","死儀礼の鳥"
+];
+
+const finalLinks = {
+  "グラディウス": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E3%81%AE%E7%8D%A3%E3%80%81%E3%82%B0%E3%83%A9%E3%83%87%E3%82%A3%E3%82%A6%E3%82%B9",
+  "エデレ": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E3%81%AE%E7%88%B5%E3%80%81%E3%82%A8%E3%83%87%E3%83%AC",
+  "グノスター": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E3%81%AE%E8%AD%98%E3%80%81%E3%82%B0%E3%83%8E%E3%82%B9%E3%82%BF%E3%83%BC",
+  "マリス": "https://kamikouryaku.net/nightreign_eldenring/?%E6%B7%B1%E6%B5%B7%E3%81%AE%E5%A4%9C%E3%80%81%E3%83%9E%E3%83%AA%E3%82%B9",
+  "リブラ": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E3%81%AE%E9%AD%94%E3%80%81%E3%83%AA%E3%83%96%E3%83%A9",
+  "フルゴール": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E5%85%89%E3%81%AE%E9%A8%8E%E5%A3%AB%E3%80%81%E3%83%95%E3%83%AB%E3%82%B4%E3%83%BC%E3%83%AB",
+  "カリゴ": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E3%81%AE%E9%9C%9E%E3%80%81%E3%82%AB%E3%83%AA%E3%82%B4",
+  "ナメレス": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E3%81%AE%E7%8E%8B%E3%80%81%E3%83%8A%E3%83%A1%E3%83%AC%E3%82%B9",
+  "ハルモニア": "https://kamikouryaku.net/nightreign_eldenring/?%E8%8B%B1%E9%9B%84%E6%AD%A6%E5%99%A8%E3%81%AE%E5%A8%98%E3%81%9F%E3%81%A1%E3%80%81%E3%83%8F%E3%83%AB%E3%83%A2%E3%83%8B%E3%82%A2",
+  "ストラゲス": "https://kamikouryaku.net/nightreign_eldenring/?%E5%8F%8D%E9%80%86%E3%81%AE%E3%82%B9%E3%83%88%E3%83%A9%E3%82%B2%E3%82%B9"
+};
+
+let selectedDay1 = null;
+let selectedDay2 = null;
+
+const day1El = document.getElementById('day1');
+const day2El = document.getElementById('day2');
+const day2Msg = document.getElementById('day2-message');
+const finalEl = document.getElementById('final');
+const finalMsg = document.getElementById('final-message');
+const resetBtn = document.getElementById('reset');
+
+function radioItem(group, value, checked, onClick){
+  const id = `${group}_${value.replace(/\s+/g,'_')}`;
+  const wrapper = document.createElement('div');
+
+  const input = document.createElement('input');
+  input.type = 'radio';
+  input.name = group;
+  input.id = id;
+  input.value = value;
+  input.className = 'radio-input hidden';
+  input.checked = checked;
+
+  const label = document.createElement('label');
+  label.htmlFor = id;
+  label.textContent = value;
+  label.className = 'radio-label';
+
+  label.onclick = ()=> onClick(input, value);
+
+  wrapper.appendChild(input);
+  wrapper.appendChild(label);
+  return wrapper;
+}
+
+function renderDay1(){
+  day1El.innerHTML = '';
+  Object.keys(dataDay1).forEach(b=>{
+    if(selectedDay1 && selectedDay1 !== b) return;
+
+    const el = radioItem('day1', b, selectedDay1===b, ()=>{
+      if(selectedDay1===b){
+        selectedDay1=null;
+        selectedDay2=null;
+      }else{
+        selectedDay1=b;
+        selectedDay2=null;
+      }
+      render();
+    });
+    day1El.appendChild(el);
+  });
+}
+
+function renderDay2(){
+  day2El.innerHTML='';
+
+  if(!selectedDay1){
+    day2El.classList.add('hidden');
+    day2Msg.classList.remove('hidden');
+    finalMsg.classList.remove('hidden');
+    return;
+  }
+
+  day2El.classList.remove('hidden');
+  day2Msg.classList.add('hidden');
+  finalMsg.classList.add('hidden');
+
+  let candidates = Object.keys(dataDay2);
+
+  if(selectedDay1){
+    const possibleFinal = new Set(dataDay1[selectedDay1]);
+    candidates = candidates.filter(d2 =>
+      dataDay2[d2].some(f=>possibleFinal.has(f))
+    );
+  }
+
+  candidates.forEach(b=>{
+    if(selectedDay2 && selectedDay2 !== b) return;
+
+    const el = radioItem('day2', b, selectedDay2===b, ()=>{
+      if(selectedDay2===b){
+        selectedDay2=null;
+      }else{
+        selectedDay2=b;
+      }
+      render();
+    });
+    day2El.appendChild(el);
+  });
+}
+
+function createFinalLink(name){
+  const a = document.createElement('a');
+  a.href = finalLinks[name];
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.className = 'flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-sm transition';
+
+  const span = document.createElement('span');
+  span.textContent = name;
+
+  const icon = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  icon.setAttribute('viewBox','0 0 24 24');
+  icon.setAttribute('fill','none');
+  icon.setAttribute('stroke','currentColor');
+  icon.setAttribute('stroke-width','2');
+  icon.setAttribute('class','w-4 h-4');
+
+  icon.innerHTML = '<path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v7h-7"/><path d="M3 10v11h11"/>';
+
+  a.appendChild(span);
+  a.appendChild(icon);
+  return a;
+}
+
+function renderFinal(){
+  finalEl.innerHTML='';
+  if(!selectedDay1 && !selectedDay2) return;
+
+  let finals=[];
+
+  if(!selectedDay2 && selectedDay1){
+    const f1 = new Set(dataDay1[selectedDay1]);
+    finals=[...f1];
+    if(dataNameless.includes(selectedDay1)) finals.push('ナメレス');
+  }
+
+  if(selectedDay1 && selectedDay2){
+    const f1 = new Set(dataDay1[selectedDay1]);
+    const f2 = new Set(dataDay2[selectedDay2]);
+    finals=[...f1].filter(x=>f2.has(x));
+    if(dataNameless.includes(selectedDay1) && dataNameless.includes(selectedDay2)){
+      finals.push('ナメレス');
+    }
+  }
+
+  finals.forEach(f=>{
+    if(finalLinks[f]){
+      finalEl.appendChild(createFinalLink(f));
+    }
+  });
+}
+
+function render(){
+  renderDay1();
+  renderDay2();
+  renderFinal();
+  updateResetState();
+}
+
+render();
+
+function updateResetState(){
+  if(!selectedDay1 && !selectedDay2){
+    resetBtn.disabled = true;
+    resetBtn.textContent = 'リセット';
+    resetBtn.className = 'px-4 py-2 rounded-xl text-sm bg-slate-700 text-slate-400 cursor-not-allowed';
+  }else{
+    resetBtn.disabled = false;
+    resetBtn.textContent = 'リセット';
+    resetBtn.className = 'px-4 py-2 rounded-xl text-sm bg-red-500 hover:bg-red-400 text-white cursor-pointer';
+  }
+}
+
+resetBtn.onclick = ()=>{
+  if(resetBtn.disabled) return;
+  selectedDay1=null;
+  selectedDay2=null;
+  render();
+};
+</script>
+
+</body>
+</html>
