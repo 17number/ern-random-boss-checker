@@ -79,7 +79,7 @@
       <button id="reset" class="px-4 py-2 bg-red-500 hover:bg-red-400 rounded-xl">リセット</button>
     </div>
 
-    <div class="grid gap-6 md:grid-cols-3">
+    <div class="grid gap-6 md:grid-cols-4">
       <!-- Day1 -->
       <div class="bg-slate-800/60 rounded-2xl p-4 shadow-lg">
         <h2 class="font-semibold mb-3">1日目ボス</h2>
@@ -91,6 +91,12 @@
         <h2 class="font-semibold mb-3">2日目ボス</h2>
         <div id="day2-message" class="text-slate-400 text-sm">1日目ボスを選択してください</div>
         <div id="day2" class="flex flex-wrap gap-2 mt-2 hidden"></div>
+      </div>
+
+      <!-- Event -->
+      <div class="bg-slate-800/60 rounded-2xl p-4 shadow-lg">
+        <h2 class="font-semibold mb-3">イベント</h2>
+        <div id="event" class="flex flex-wrap gap-2 mt-2"></div>
       </div>
 
       <!-- Final -->
@@ -179,6 +185,22 @@ const dataNameless = [
   "降る星の成獣","冷たい谷の踊り子","無名の王","死儀礼の鳥"
 ];
 
+const dataEvent = {
+  "忌み鬼": ["エデレ", "グノスター", "ナメレス"],
+  "知性の蟲": ["マリス", "リブラ", "ナメレス"],
+  "兆し": ["グノスター", "カリゴ", "ナメレス"],
+  "調律の魔物": ["フルゴール", "カリゴ", "ナメレス"],
+  "三つ首の獣": ["ハルモニア", "ストラゲス"],
+  "霧の裂け目": ["ハルモニア", "ストラゲス"],
+  "安寧者たち": ["ストラゲス"],
+  "狂い火": ["グノスター", "リブラ", "ハルモニア", "ストラゲス"],
+  "隕石": ["グラディウス", "エデレ", "カリゴ", "ハルモニア"],
+  "狂い火": ["グノスター", "リブラ", "ハルモニア", "ストラゲス"],
+  "古の魔術師塔": ["グノスター", "リブラ", "ハルモニア"],
+  "夜の勢力": ["グラディウス", "マリス", "フルゴール"],
+  "新たなる脅威": ["エデレ", "フルゴール", "ハルモニア", "ストラゲス"],
+};
+
 const finalLinks = {
   "グラディウス": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E3%81%AE%E7%8D%A3%E3%80%81%E3%82%B0%E3%83%A9%E3%83%87%E3%82%A3%E3%82%A6%E3%82%B9",
   "エデレ": "https://kamikouryaku.net/nightreign_eldenring/?%E5%A4%9C%E3%81%AE%E7%88%B5%E3%80%81%E3%82%A8%E3%83%87%E3%83%AC",
@@ -194,10 +216,12 @@ const finalLinks = {
 
 let selectedDay1 = null;
 let selectedDay2 = null;
+let selectedEvent = null;
 
 const day1El = document.getElementById('day1');
 const day2El = document.getElementById('day2');
 const day2Msg = document.getElementById('day2-message');
+const eventEl = document.getElementById('event');
 const finalEl = document.getElementById('final');
 const finalMsg = document.getElementById('final-message');
 const resetBtn = document.getElementById('reset');
@@ -228,7 +252,26 @@ function radioItem(group, value, checked, onClick){
 
 function renderDay1(){
   day1El.innerHTML = '';
-  Object.keys(dataDay1).forEach(b=>{
+
+  if (selectedDay1) {
+    const el = radioItem('day1', selectedDay1, true, ()=>{
+      selectedDay1=null;
+      render();
+    });
+    day1El.appendChild(el);
+    return;
+  }
+
+  let candidates = Object.keys(dataDay1);
+
+  if (selectedEvent) {
+    const possibleFinal = new Set(dataEvent[selectedEvent]);
+    candidates = candidates.filter(d =>
+      dataDay1[d].some(f=>possibleFinal.has(f))
+    );
+  }
+
+  candidates.forEach(b=>{
     if(selectedDay1 && selectedDay1 !== b) return;
 
     const el = radioItem('day1', b, selectedDay1===b, ()=>{
@@ -248,7 +291,7 @@ function renderDay1(){
 function renderDay2(){
   day2El.innerHTML='';
 
-  if(!selectedDay1){
+  if (!selectedDay1){
     day2El.classList.add('hidden');
     day2Msg.classList.remove('hidden');
     finalMsg.classList.remove('hidden');
@@ -259,12 +302,31 @@ function renderDay2(){
   day2Msg.classList.add('hidden');
   finalMsg.classList.add('hidden');
 
+  if (selectedDay2) {
+    const el = radioItem('day2', selectedDay2, true, ()=>{
+      selectedDay2=null;
+      render();
+    });
+    day2El.appendChild(el);
+    return;
+  }
+
   let candidates = Object.keys(dataDay2);
 
-  if(selectedDay1){
+  if (selectedDay1) {
     const possibleFinal = new Set(dataDay1[selectedDay1]);
+    if(dataNameless.includes(selectedDay1)){
+      possibleFinal.add('ナメレス');
+    }
     candidates = candidates.filter(d2 =>
       dataDay2[d2].some(f=>possibleFinal.has(f))
+    );
+  }
+
+  if (selectedEvent) {
+    const possibleFinal = new Set(dataEvent[selectedEvent]);
+    candidates = candidates.filter(d =>
+      dataDay2[d].some(f=>possibleFinal.has(f))
     );
   }
 
@@ -280,6 +342,44 @@ function renderDay2(){
       render();
     });
     day2El.appendChild(el);
+  });
+}
+
+function renderEvent(){
+  eventEl.innerHTML = '';
+
+  let candidates = Object.keys(dataEvent);
+
+  if (selectedDay1 && selectedDay2) {
+    const possibleFinal = new Set(dataDay1[selectedDay1].filter(f => dataDay2[selectedDay2].includes(f)));
+    if (dataNameless.includes(selectedDay1) && dataNameless.includes(selectedDay2)){
+      possibleFinal.add('ナメレス');
+    }
+    candidates = candidates.filter(d =>
+      dataEvent[d].some(f=>possibleFinal.has(f))
+    );
+  } else if (selectedDay1) {
+    const possibleFinal = new Set(dataDay1[selectedDay1]);
+    if(dataNameless.includes(selectedDay1)){
+      possibleFinal.add('ナメレス');
+    }
+    candidates = candidates.filter(d =>
+      dataEvent[d].some(f=>possibleFinal.has(f))
+    );
+  }
+
+  candidates.forEach(b=>{
+    if(selectedEvent && selectedEvent !== b) return;
+
+    const el = radioItem('event', b, selectedEvent===b, ()=>{
+      if(selectedEvent===b){
+        selectedEvent=null;
+      }else{
+        selectedEvent=b;
+      }
+      render();
+    });
+    eventEl.appendChild(el);
   });
 }
 
@@ -309,23 +409,27 @@ function createFinalLink(name){
 
 function renderFinal(){
   finalEl.innerHTML='';
-  if(!selectedDay1 && !selectedDay2) return;
+  if(!selectedDay1 && !selectedDay2 && !selectedEvent) return;
 
   let finals=[];
 
-  if(!selectedDay2 && selectedDay1){
-    const f1 = new Set(dataDay1[selectedDay1]);
-    finals=[...f1];
-    if(dataNameless.includes(selectedDay1)) finals.push('ナメレス');
-  }
-
-  if(selectedDay1 && selectedDay2){
-    const f1 = new Set(dataDay1[selectedDay1]);
-    const f2 = new Set(dataDay2[selectedDay2]);
-    finals=[...f1].filter(x=>f2.has(x));
-    if(dataNameless.includes(selectedDay1) && dataNameless.includes(selectedDay2)){
+  const f1 = new Set(selectedDay1 ? dataDay1[selectedDay1] : []);
+  const f2 = new Set(selectedDay2 ? dataDay2[selectedDay2] : []);
+  const f3 = new Set(selectedEvent ? dataEvent[selectedEvent] : []);
+  if (f1.size) {
+    finals = [...f1];
+    if(dataNameless.includes(selectedDay1)){
       finals.push('ナメレス');
     }
+  }
+  if (f2.size) {
+    finals = finals.length ? finals.filter(x => f2.has(x)) : [...f2];
+    if(dataNameless.includes(selectedDay1) && dataNameless.includes(selectedDay2) && !finals.includes('ナメレス')){
+      finals.push('ナメレス');
+    }
+  }
+  if (f3.size) {
+    finals = finals.length ? finals.filter(x => f3.has(x)) : [...f3];
   }
 
   finals.forEach(f=>{
@@ -338,6 +442,7 @@ function renderFinal(){
 function render(){
   renderDay1();
   renderDay2();
+  renderEvent();
   renderFinal();
   updateResetState();
 }
@@ -345,7 +450,7 @@ function render(){
 render();
 
 function updateResetState(){
-  if(!selectedDay1 && !selectedDay2){
+  if(!selectedDay1 && !selectedDay2 && !selectedEvent){
     resetBtn.disabled = true;
     resetBtn.textContent = 'リセット';
     resetBtn.className = 'px-4 py-2 rounded-xl text-sm bg-slate-700 text-slate-400 cursor-not-allowed';
@@ -360,6 +465,7 @@ resetBtn.onclick = ()=>{
   if(resetBtn.disabled) return;
   selectedDay1=null;
   selectedDay2=null;
+  selectedEvent=null;
   render();
 };
 </script>
