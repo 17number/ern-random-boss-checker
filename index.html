@@ -348,6 +348,15 @@ function renderDay2(){
 function renderEvent(){
   eventEl.innerHTML = '';
 
+  if (selectedEvent) {
+    const el = radioItem('event', selectedEvent, true, ()=>{
+      selectedEvent=null;
+      render();
+    });
+    eventEl.appendChild(el);
+    return;
+  }
+
   let candidates = Object.keys(dataEvent);
 
   if (selectedDay1 && selectedDay2) {
