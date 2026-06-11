@@ -175,6 +175,7 @@ const dataDay2 = {
   "血の君主": ["ハルモニア"],
   "神獣獅子舞": ["ストラゲス"],
   "騎士アルトリウス": ["ストラゲス"],
+  "該当なし (ナメレス)": ["ナメレス"],
 };
 
 const dataNameless = [
@@ -183,7 +184,8 @@ const dataNameless = [
   "接ぎ木の君主","ティビアの呼び舟","王族の幽鬼","公のフレイディア",
   "ツリーガード","忌み鬼","古竜","坩堝の騎士＆黄金カバ","僻地の宿将",
   "ノクスの竜人兵","竜のツリーガード","大土竜","神肌の貴種＆神肌の使徒",
-  "降る星の成獣","冷たい谷の踊り子","無名の王","死儀礼の鳥"
+  "降る星の成獣","冷たい谷の踊り子","無名の王","死儀礼の鳥",
+  "該当なし (ナメレス)",
 ];
 
 const dataEvent = {
@@ -196,7 +198,6 @@ const dataEvent = {
   "安寧者たち": ["グラディウス", "エデレ", "グノスター", "マリス", "リブラ", "フルゴール", "カリゴ", "ナメレス", "ハルモニア", "ストラゲス"],
   "狂い火": ["グノスター", "リブラ", "ハルモニア", "ストラゲス"],
   "隕石": ["グラディウス", "エデレ", "カリゴ", "ハルモニア"],
-  "狂い火": ["グノスター", "リブラ", "ハルモニア", "ストラゲス"],
   "古の魔術師塔": ["グノスター", "リブラ", "ハルモニア"],
   "夜の勢力": ["グラディウス", "マリス", "フルゴール"],
   "新たなる脅威": ["エデレ", "フルゴール", "ハルモニア", "ストラゲス"],
@@ -316,7 +317,7 @@ function renderDay2(){
 
   if (selectedDay1) {
     const possibleFinal = new Set(dataDay1[selectedDay1]);
-    if(dataNameless.includes(selectedDay1)){
+    if(dataNameless.includes(selectedDay1) && !possibleFinal.has('ナメレス')){
       possibleFinal.add('ナメレス');
     }
     candidates = candidates.filter(d2 =>
@@ -362,7 +363,7 @@ function renderEvent(){
 
   if (selectedDay1 && selectedDay2) {
     const possibleFinal = new Set(dataDay1[selectedDay1].filter(f => dataDay2[selectedDay2].includes(f)));
-    if (dataNameless.includes(selectedDay1) && dataNameless.includes(selectedDay2)){
+    if (dataNameless.includes(selectedDay1) && dataNameless.includes(selectedDay2) && !possibleFinal.has('ナメレス')) {
       possibleFinal.add('ナメレス');
     }
     candidates = candidates.filter(d =>
@@ -370,7 +371,7 @@ function renderEvent(){
     );
   } else if (selectedDay1) {
     const possibleFinal = new Set(dataDay1[selectedDay1]);
-    if(dataNameless.includes(selectedDay1)){
+    if(dataNameless.includes(selectedDay1) && !possibleFinal.has('ナメレス')){
       possibleFinal.add('ナメレス');
     }
     candidates = candidates.filter(d =>
@@ -423,23 +424,27 @@ function renderFinal(){
 
   let finals=[];
 
-  const f1 = new Set(selectedDay1 ? dataDay1[selectedDay1] : []);
-  const f2 = new Set(selectedDay2 ? dataDay2[selectedDay2] : []);
-  const f3 = new Set(selectedEvent ? dataEvent[selectedEvent] : []);
-  if (f1.size) {
-    finals = [...f1];
-    if(dataNameless.includes(selectedDay1)){
-      finals.push('ナメレス');
+  if (selectedDay2 === '該当なし (ナメレス)') {
+    finals = ['ナメレス'];
+  } else {
+    const f1 = new Set(selectedDay1 ? dataDay1[selectedDay1] : []);
+    const f2 = new Set(selectedDay2 ? dataDay2[selectedDay2] : []);
+    const f3 = new Set(selectedEvent ? dataEvent[selectedEvent] : []);
+    if (f1.size) {
+      finals = [...f1];
+      if(dataNameless.includes(selectedDay1) && !finals.includes('ナメレス')){
+        finals.push('ナメレス');
+      }
     }
-  }
-  if (f2.size) {
-    finals = finals.length ? finals.filter(x => f2.has(x)) : [...f2];
-    if(dataNameless.includes(selectedDay1) && dataNameless.includes(selectedDay2) && !finals.includes('ナメレス')){
-      finals.push('ナメレス');
+    if (f2.size) {
+      finals = finals.length ? finals.filter(x => f2.has(x)) : [...f2];
+      if(dataNameless.includes(selectedDay1) && dataNameless.includes(selectedDay2) && !finals.includes('ナメレス')){
+        finals.push('ナメレス');
+      }
     }
-  }
-  if (f3.size) {
-    finals = finals.length ? finals.filter(x => f3.has(x)) : [...f3];
+    if (f3.size) {
+      finals = finals.length ? finals.filter(x => f3.has(x)) : [...f3];
+    }
   }
 
   finals.forEach(f=>{
