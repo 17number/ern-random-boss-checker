@@ -93,12 +93,24 @@
       <!-- Day1 -->
       <div class="bg-slate-800/60 rounded-2xl p-4 shadow-lg">
         <h2 class="font-semibold mb-3">1日目ボス</h2>
+        <input
+          id="day1-filter"
+          type="text"
+          placeholder="ボス名で絞り込み..."
+          class="w-full mb-4 px-2 py-1 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
         <div id="day1" class="flex flex-wrap gap-2"></div>
       </div>
 
       <!-- Day2 -->
       <div class="bg-slate-800/60 rounded-2xl p-4 shadow-lg">
         <h2 class="font-semibold mb-3">2日目ボス</h2>
+        <input
+          id="day2-filter"
+          type="text"
+          placeholder="ボス名で絞り込み..."
+          class="w-full mb-4 px-2 py-1 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 hidden"
+        />
         <div id="day2-message" class="text-slate-400 text-sm">1日目ボスを選択してください</div>
         <div id="day2" class="flex flex-wrap gap-2 mt-2 hidden"></div>
       </div>
@@ -106,6 +118,12 @@
       <!-- Event -->
       <div class="bg-slate-800/60 rounded-2xl p-4 shadow-lg">
         <h2 class="font-semibold mb-3">イベント</h2>
+        <input
+          id="event-filter"
+          type="text"
+          placeholder="イベント名で絞り込み..."
+          class="w-full mb-4 px-2 py-1 rounded-lg bg-slate-700 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
         <div id="event" class="flex flex-wrap gap-2 mt-2"></div>
       </div>
 
@@ -225,9 +243,69 @@ const finalLinks = {
   "ストラゲス": "https://kamikouryaku.net/nightreign_eldenring/?%E5%8F%8D%E9%80%86%E3%81%AE%E3%82%B9%E3%83%88%E3%83%A9%E3%82%B2%E3%82%B9"
 };
 
+const kanaFilterDay1 = {
+  "ティビアの呼び舟": ["てぃびあのよびぶね",],
+  "ミミズ顔": ["みみずがお",],
+  "亜人の女王＆亜人の剣聖": ["あじんのじょおう","あじんのけんせい",],
+  "英雄のガーゴイル": ["えいゆうのがーごいる",],
+  "王族の幽鬼": ["おうぞくのゆうき",],
+  "公のフレイディア": ["こうのふれいでぃあ",],
+  "死の騎士": ["しのきし",],
+  "呪剣士＆神獣の戦士": ["じゅけんし＆しんじゅうのせんし",],
+  "傷ついたデーモン＆うろ底のデーモン": ["きずついたでーもん","うろそこのでーもん",],
+  "接ぎ木の君主": ["つぎきのくんしゅ","ごどりっく"],
+  "戦場の宿将": ["せんじょうのしゅくしょう","おにーる"],
+  "大赤熊": ["おおあかぐま","るがりあ"],
+  "百足のデーモン": ["むかでのでーもん",],
+  "夜の騎兵": ["よるのきへい",],
+  "熔鉄デーモン": ["ようてつでーもん",],
+  "鈴玉狩り": ["すずたまがり","えれめーる"],
+  "爛れた樹霊": ["ただれたじゅれい",],
+  "貪食ドラゴン": ["どんしょくどらごん",],
+};
+
+const kanaFilterDay2 = {
+  "ツリーガード": ["つりーがーど",],
+  "デーモンの王子": ["でーもんのおうじ",],
+  "ノクスの竜人兵": ["のくすのりゅうじんへい",],
+  "忌み鬼": ["いみおに","まるぎっと","もーごっと",],
+  "騎士アルトリウス": ["きしあるとりうす",],
+  "血の君主": ["ちのくんしゅ","もーぐ",],
+  "古竜": ["こりゅう","らんさくす",],
+  "降る星の成獣": ["ふるほしのせいじゅう",],
+  "死儀礼の鳥": ["しぎれいのとり",],
+  "神獣獅子舞": ["しんじゅうししまい",],
+  "神肌の貴種＆神肌の使徒": ["かみはだのきしゅ＆かみはだのしと",],
+  "大土竜": ["おおもぐら","だいどりゅう","ておどりっくす",],
+  "僻地の宿将": ["へきちのしゅくしょう","にあーる"],
+  "無名の王": ["むめいのおう",],
+  "竜のツリーガード": ["りゅうのつりーがーど",],
+  "冷たい谷の踊り子": ["つめたいたにのおどりこ",],
+  "坩堝の騎士＆黄金カバ": ["るつぼのきし＆おうごんかば",],
+  "該当なし (ナメレス)": ["がいとうなし","なめれす",],
+};
+
+const kanaFilterEvent = {
+  "安寧者たち": ["あんねいしゃたち","はるもにあ",],
+  "忌み鬼": ["いみおに","まるぎっと","もーごっと",],
+  "狂い火": ["くるいび",],
+  "古の魔術師塔": ["いにしえのまじゅつしとう",],
+  "三つ首の獣": ["みつくびのけもの","ぐらでぃうす",],
+  "新たなる脅威": ["あらたなるきょうい",],
+  "知性の蟲": ["ちせいのむし","ぐのすたー",],
+  "兆し": ["きざし","まりす",],
+  "調律の魔物": ["ちょうりつのまもの","りぶら",],
+  "霧の裂け目": ["きりのさけめ","かりご",],
+  "夜の勢力": ["よるのせいりょく",],
+  "隕石": ["いんせき",],
+};
+
 let selectedDay1 = null;
 let selectedDay2 = null;
 let selectedEvent = null;
+let filterDay1 = '';
+let filterDay2 = '';
+let filterEvent = '';
 
 const day1El = document.getElementById('day1');
 const day2El = document.getElementById('day2');
@@ -236,6 +314,33 @@ const eventEl = document.getElementById('event');
 const finalEl = document.getElementById('final');
 const finalMsg = document.getElementById('final-message');
 const resetBtn = document.getElementById('reset');
+const day1FilterInput = document.getElementById('day1-filter');
+const day2FilterInput = document.getElementById('day2-filter');
+const eventFilterInput = document.getElementById('event-filter');
+
+function katakanaToHiragana(str) {
+  return str.replace(/[\u30A1-\u30F6]/g, ch =>
+    String.fromCharCode(ch.charCodeAt(0) - 0x60)
+  );
+}
+
+day1FilterInput.addEventListener('input', e => {
+  filterDay1 = katakanaToHiragana(e.target.value.trim().toLowerCase());
+  renderDay1();
+  updateResetState();
+});
+
+day2FilterInput.addEventListener('input', e => {
+  filterDay2 = katakanaToHiragana(e.target.value.trim().toLowerCase());
+  renderDay2();
+  updateResetState();
+});
+
+eventFilterInput.addEventListener('input', e => {
+  filterEvent = katakanaToHiragana(e.target.value.trim().toLowerCase());
+  renderEvent();
+  updateResetState();
+});
 
 function radioItem(group, value, checked, onClick){
   const id = `${group}_${value.replace(/\s+/g,'_')}`;
@@ -282,15 +387,26 @@ function renderDay1(){
     );
   }
 
-  candidates.forEach(b=>{
-    if(selectedDay1 && selectedDay1 !== b) return;
+  candidates.forEach(candidate=>{
+    if(selectedDay1 && selectedDay1 !== candidate) return;
 
-    const el = radioItem('day1', b, selectedDay1===b, ()=>{
-      if(selectedDay1===b){
+    if (filterDay1) {
+      if (
+        // 名前側の確認
+        !candidate.toLowerCase().includes(filterDay1) &&
+        // よみの確認
+        !kanaFilterDay1[candidate]?.some(kana => kana.includes(filterDay1))
+      ) {
+        return;
+      }
+    }
+
+    const el = radioItem('day1', candidate, selectedDay1===candidate, ()=>{
+      if(selectedDay1===candidate){
         selectedDay1=null;
         selectedDay2=null;
       }else{
-        selectedDay1=b;
+        selectedDay1=candidate;
         selectedDay2=null;
       }
       render();
@@ -304,12 +420,14 @@ function renderDay2(){
 
   if (!selectedDay1){
     day2El.classList.add('hidden');
+    day2FilterInput.classList.add('hidden');
     day2Msg.classList.remove('hidden');
     finalMsg.classList.remove('hidden');
     return;
   }
 
   day2El.classList.remove('hidden');
+  day2FilterInput.classList.remove('hidden');
   day2Msg.classList.add('hidden');
   finalMsg.classList.add('hidden');
 
@@ -341,14 +459,25 @@ function renderDay2(){
     );
   }
 
-  candidates.forEach(b=>{
-    if(selectedDay2 && selectedDay2 !== b) return;
+  candidates.forEach(candidate=>{
+    if(selectedDay2 && selectedDay2 !== candidate) return;
 
-    const el = radioItem('day2', b, selectedDay2===b, ()=>{
-      if(selectedDay2===b){
+    if (filterDay2) {
+      if (
+        // 名前側の確認
+        !candidate.toLowerCase().includes(filterDay2) &&
+        // よみの確認
+        !kanaFilterDay2[candidate]?.some(kana => kana.includes(filterDay2))
+      ) {
+        return;
+      }
+    }
+
+    const el = radioItem('day2', candidate, selectedDay2===candidate, ()=>{
+      if(selectedDay2===candidate){
         selectedDay2=null;
       }else{
-        selectedDay2=b;
+        selectedDay2=candidate;
       }
       render();
     });
@@ -388,14 +517,25 @@ function renderEvent(){
     );
   }
 
-  candidates.forEach(b=>{
-    if(selectedEvent && selectedEvent !== b) return;
+  candidates.forEach(candidate=>{
+    if(selectedEvent && selectedEvent !== candidate) return;
 
-    const el = radioItem('event', b, selectedEvent===b, ()=>{
-      if(selectedEvent===b){
+    if (filterEvent) {
+      if (
+        // 名前側の確認
+        !candidate.toLowerCase().includes(filterEvent) &&
+        // よみの確認
+        !kanaFilterEvent[candidate]?.some(kana => kana.includes(filterEvent))
+      ) {
+        return;
+      }
+    }
+
+    const el = radioItem('event', candidate, selectedEvent===candidate, ()=>{
+      if(selectedEvent===candidate){
         selectedEvent=null;
       }else{
-        selectedEvent=b;
+        selectedEvent=candidate;
       }
       render();
     });
@@ -474,7 +614,7 @@ function render(){
 render();
 
 function updateResetState(){
-  if(!selectedDay1 && !selectedDay2 && !selectedEvent){
+  if(!selectedDay1 && !selectedDay2 && !selectedEvent && !filterDay1 && !filterDay2 && !filterEvent){
     resetBtn.disabled = true;
     resetBtn.textContent = 'リセット';
     resetBtn.className = 'px-4 py-2 rounded-xl text-sm bg-slate-700 text-slate-400 cursor-not-allowed';
@@ -490,6 +630,12 @@ resetBtn.onclick = ()=>{
   selectedDay1=null;
   selectedDay2=null;
   selectedEvent=null;
+  filterDay1='';
+  filterDay2='';
+  filterEvent='';
+  day1FilterInput.value='';
+  day2FilterInput.value='';
+  eventFilterInput.value='';
   render();
 };
 </script>
